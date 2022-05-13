@@ -2,12 +2,11 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"piscine"
+	//"os"
+	p "piscine"
 )
 
 func main() {
-
 	core := piscine.NewCore()
 	fmt.Println(core.Minos)
 
