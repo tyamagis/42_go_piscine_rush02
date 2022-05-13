@@ -5,6 +5,11 @@ import "fmt"
 // blocksの各要素([]string)が正しいテトリミノ定義であることを確認する。
 // check that every elements in block is valid as tetrimino definition.
 func Validate(core *Core, blocks [][]string) bool {
+	n := len(blocks)
+	if n < 1 || 26 < n {
+		return false
+	}
+
 	return Every(blocks, func(lines []string, _ int) bool {
 		// []stringの長さが4であるか？
 		// size of lines is 4?
