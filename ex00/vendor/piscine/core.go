@@ -1,7 +1,12 @@
 package piscine
 
 type Core struct {
+	// ミノ種別のマスターデータ
 	Minos []int
+	// ミノ形状のマスターデータ
+	MinoMap map[string]int
+	// 入力をミノ種別に変換したもの
+	GivenMinos []int
 }
 
 func NewCore() *Core {
@@ -27,5 +32,6 @@ func NewCore() *Core {
 			MinoZU,
 			MinoZR,
 		},
+		MinoMap: MakeMinoShapes(),
 	}
 }
