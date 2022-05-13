@@ -26,7 +26,13 @@ const (
 
 const MinoSize = 4
 
-func MakeMinoShapes() map[string]int {
+type MinoMaster struct {
+	MinoType      int
+	Height, Width int
+	shape         [][]rune
+}
+
+func MakeMinoShapes() (map[string]*MinoMaster, map[int]*MinoMaster) {
 	shapes := make([][]string, 0)
 	rotator := func(shape []string, n int) {
 		s := shape
@@ -72,9 +78,22 @@ func MakeMinoShapes() map[string]int {
 	rotator(shapeS, 2)
 	rotator(shapeZ, 2)
 
-	shapeMap := map[string]int{}
+	shapeMap := map[string]*MinoMaster{}
+	shapeReverseMap := map[int]*MinoMaster{}
 	for i, shape := range shapes {
-		shapeMap[Join(shape, "\n")] = i
+		h := len(shape)
+		w := len(shape[0])
+		joined := Join(shape, "\n")
+		mm := &MinoMaster{
+			MinoType: i,
+			Height:   h,
+			Width:    w,
+			shape: Map(shape, func(s string, _ int) []rune {
+				return []rune(s)
+			}),
+		}
+		shapeMap[joined] = mm
+		shapeReverseMap[i] = mm
 	}
-	return shapeMap
+	return shapeMap, shapeReverseMap
 }

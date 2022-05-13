@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"piscine"
 )
@@ -17,10 +16,11 @@ func main() {
 	path := os.Args[1]
 	content, _ := piscine.Read(path)
 	blocks, _ := piscine.Divide(content)
-	fmt.Println(blocks)
 	if !piscine.Validate(core, blocks) {
 		return
 	}
 	core.GivenMinos = piscine.Symbolize(core, blocks)
-	fmt.Println(core)
+	// fmt.Println(core)
+
+	piscine.Solve(core)
 }

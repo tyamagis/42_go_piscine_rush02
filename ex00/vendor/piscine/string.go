@@ -9,7 +9,28 @@ func StringHasRune(s string, r rune) bool {
 	return false
 }
 
-// LU -> 2x3
-
-// 縦 4 - 2 + 1 = 3パターン(0, 1, 2)
-// 横 4 - 3 + 1 = 2パターン(0, 1)
+func StringTrim(s string, charSet string) string {
+	charMap := map[rune]bool{}
+	for _, c := range charSet {
+		charMap[c] = true
+	}
+	f := 0
+	t := len(s) - 1
+	if !(f <= t) {
+		return ""
+	}
+	rs := []rune(s)
+	for ; f <= t; f++ {
+		_, e := charMap[rs[f]]
+		if !e {
+			break
+		}
+	}
+	for ; f <= t; t-- {
+		_, e := charMap[rs[t]]
+		if !e {
+			break
+		}
+	}
+	return string(rs[f : t+1])
+}

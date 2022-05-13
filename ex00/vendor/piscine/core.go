@@ -4,12 +4,14 @@ type Core struct {
 	// ミノ種別のマスターデータ
 	Minos []int
 	// ミノ形状のマスターデータ
-	MinoMap map[string]int
+	MinoMap        map[string]*MinoMaster
+	MinoReverseMap map[int]*MinoMaster
 	// 入力をミノ種別に変換したもの
 	GivenMinos []int
 }
 
 func NewCore() *Core {
+	MinoMap, MinoReverseMap := MakeMinoShapes()
 	return &Core{
 		Minos: []int{
 			MinoO,
@@ -32,6 +34,7 @@ func NewCore() *Core {
 			MinoZU,
 			MinoZR,
 		},
-		MinoMap: MakeMinoShapes(),
+		MinoMap:        MinoMap,
+		MinoReverseMap: MinoReverseMap,
 	}
 }
