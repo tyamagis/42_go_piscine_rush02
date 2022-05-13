@@ -89,3 +89,14 @@ func maxInt(a, b int) int {
 	}
 	return a
 }
+
+func Join(s []string, sep string) string {
+	rv := ""
+	for i, a := range s {
+		if i > 0 {
+			rv += sep
+		}
+		rv += a
+	}
+	return rv
+}
