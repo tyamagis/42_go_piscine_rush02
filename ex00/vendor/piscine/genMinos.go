@@ -119,6 +119,5 @@ func TransMinos(w,h int, mino []string) []string {
 	for i := 0; i < r; i++ {
 		tmp = append(tmp, "....\n")
 	}
-	tmp[3] += "\n"
 	return tmp
 }
