@@ -6,7 +6,6 @@ import (
 )
 
 func main() {
-
 	core := piscine.NewCore()
 
 	n := piscine.SliceLen(os.Args)
