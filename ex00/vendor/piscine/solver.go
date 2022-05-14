@@ -20,6 +20,7 @@ type SolverState struct {
 	Board                [][]rune
 	BitVBoard, BitHBoard []uint64
 	Placement            map[int]int
+	PositionStack        map[int]*[]int
 }
 
 func solveForSize(core *Core, size int) bool {
@@ -32,10 +33,15 @@ func solveForSize(core *Core, size int) bool {
 			}
 			return row
 		}),
-		BitVBoard: makeBitBoard(size),
-		BitHBoard: makeBitBoard(size),
-		Placement: map[int]int{},
+		BitVBoard:     makeBitBoard(size),
+		BitHBoard:     makeBitBoard(size),
+		Placement:     map[int]int{},
+		PositionStack: map[int]*[]int{},
 	}
+	ForEach(core.Minos, func(k, _ int) {
+		s := make([]int, 0, size)
+		ss.PositionStack[k] = &s
+	})
 	return dfs(core, ss, 0)
 }
 
@@ -48,8 +54,14 @@ func dfs(core *Core, state *SolverState, k int) bool {
 	mino := core.MinoReverseMap[mt]
 	// fmt.Println(mino)
 
-	for i := 0; i < state.Size-mino.Height+1; i++ {
-		for j := 0; j < state.Size-mino.Width+1; j++ {
+	i, j := 0, 0
+	if len(*state.PositionStack[mt]) > 0 {
+		pos := Top(state.PositionStack[mt]) + 1
+		i, j = pos/state.Size, pos%state.Size
+	}
+
+	for ; i < state.Size-mino.Height+1; i++ {
+		for ; j < state.Size-mino.Width+1; j++ {
 			if !state.isBitPlacableAt(mino, i, j) {
 				continue
 			}
@@ -59,8 +71,9 @@ func dfs(core *Core, state *SolverState, k int) bool {
 			if dfs(core, state, k+1) {
 				return true
 			}
-			state.bitRemoveFrom(mino, i, j)
+			state.bitRemoveFrom(mino, i, j, k)
 		}
+		j = 0
 	}
 
 	return false

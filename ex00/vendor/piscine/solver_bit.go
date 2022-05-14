@@ -62,6 +62,7 @@ func (ss *SolverState) isBitPlacableAt(mino *MinoMaster, i, j int) bool {
 
 func (ss *SolverState) bitPlaceAt(mino *MinoMaster, i, j, k int) {
 	ss.Placement[i*ss.Size+j] = k
+	Push(ss.PositionStack[mino.MinoType], i*ss.Size+j)
 	for ii, bitRow := range mino.bitVShape {
 		ss.BitVBoard[i+ii] |= (bitRow << j)
 	}
@@ -70,8 +71,9 @@ func (ss *SolverState) bitPlaceAt(mino *MinoMaster, i, j, k int) {
 	}
 }
 
-func (ss *SolverState) bitRemoveFrom(mino *MinoMaster, i, j int) {
+func (ss *SolverState) bitRemoveFrom(mino *MinoMaster, i, j, k int) {
 	delete(ss.Placement, i*ss.Size+j)
+	Pop(ss.PositionStack[mino.MinoType])
 	for ii, bitRow := range mino.bitVShape {
 		ss.BitVBoard[i+ii] ^= (bitRow << j)
 	}
