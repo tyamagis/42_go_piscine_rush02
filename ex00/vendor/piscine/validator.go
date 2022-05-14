@@ -8,6 +8,7 @@ func Validate(core *Core, blocks [][]string) bool {
 	n := len(blocks)
 	if n < 1 || 26 < n {
 		PrintError("number of block is invalid")
+		fmt.Println("n", n)
 		return false
 	}
 

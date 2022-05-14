@@ -27,9 +27,10 @@ const (
 const MinoSize = 4
 
 type MinoMaster struct {
-	MinoType      int
-	Height, Width int
-	shape         [][]rune
+	MinoType             int
+	Height, Width        int
+	shape                [][]rune
+	bitHShape, bitVShape []uint64
 }
 
 func MakeMinoShapes() (map[string]*MinoMaster, map[int]*MinoMaster) {
@@ -84,16 +85,32 @@ func MakeMinoShapes() (map[string]*MinoMaster, map[int]*MinoMaster) {
 		h := len(shape)
 		w := len(shape[0])
 		joined := Join(shape, "\n")
+		runeShape := Map(shape, func(s string, _ int) []rune {
+			return []rune(s)
+		})
 		mm := &MinoMaster{
-			MinoType: i,
-			Height:   h,
-			Width:    w,
-			shape: Map(shape, func(s string, _ int) []rune {
-				return []rune(s)
-			}),
+			MinoType:  i,
+			Height:    h,
+			Width:     w,
+			shape:     runeShape,
+			bitVShape: ShapeToBitmask(shape),
+			bitHShape: ShapeToBitmask(TransposeLines(shape)),
 		}
 		shapeMap[joined] = mm
 		shapeReverseMap[i] = mm
+		// fmt.Println(mm)
 	}
 	return shapeMap, shapeReverseMap
+}
+
+func ShapeToBitmask(shape []string) []uint64 {
+	return Map(shape, func(s string, _ int) uint64 {
+		var v uint64
+		for i, c := range s {
+			if c == '#' {
+				v |= (1 << i)
+			}
+		}
+		return v
+	})
 }

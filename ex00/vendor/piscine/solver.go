@@ -3,7 +3,9 @@ package piscine
 import "fmt"
 
 func Solve(core *Core) {
-	for n := 4; true; n++ {
+	fn := firstSize(core)
+	fmt.Println(ScreenClear)
+	for n := fn; true; n++ {
 		fmt.Printf("try for size %d\n", n)
 		if solveForSize(core, n) {
 			fmt.Println("solved")
@@ -14,8 +16,10 @@ func Solve(core *Core) {
 }
 
 type SolverState struct {
-	Size  int
-	Board [][]rune
+	Size                 int
+	Board                [][]rune
+	BitVBoard, BitHBoard []uint64
+	Placement            map[int]int
 }
 
 func solveForSize(core *Core, size int) bool {
@@ -28,13 +32,16 @@ func solveForSize(core *Core, size int) bool {
 			}
 			return row
 		}),
+		BitVBoard: makeBitBoard(size),
+		BitHBoard: makeBitBoard(size),
+		Placement: map[int]int{},
 	}
 	return dfs(core, ss, 0)
 }
 
 func dfs(core *Core, state *SolverState, k int) bool {
 	if k == len(core.GivenMinos) {
-		PrintBoard(state)
+		state.bitPrintBoard(core)
 		return true
 	}
 	mt := core.GivenMinos[k]
@@ -43,14 +50,16 @@ func dfs(core *Core, state *SolverState, k int) bool {
 
 	for i := 0; i < state.Size-mino.Height+1; i++ {
 		for j := 0; j < state.Size-mino.Width+1; j++ {
-			if !isPlacableAt(state, mino, i, j) {
+			if !state.isBitPlacableAt(mino, i, j) {
 				continue
 			}
-			placeAt(state, mino, i, j, k)
+			state.bitPlaceAt(mino, i, j, k)
+			// fmt.Println(state.BitVBoard)
+			Visualize(core, state, i, j, k, "put")
 			if dfs(core, state, k+1) {
 				return true
 			}
-			removeFrom(state, mino, i, j)
+			state.bitRemoveFrom(mino, i, j)
 		}
 	}
 

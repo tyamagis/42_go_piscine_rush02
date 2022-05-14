@@ -2,13 +2,13 @@ package piscine
 
 import "fmt"
 
-func PrintBoard(ss *SolverState) {
+func (ss *SolverState) PrintBoard() {
 	ForEach(ss.Board, func(rs []rune, _ int) {
 		fmt.Println(string(rs))
 	})
 }
 
-func isPlacableAt(ss *SolverState, mino *MinoMaster, i, j int) bool {
+func (ss *SolverState) isPlacableAt(mino *MinoMaster, i, j int) bool {
 	for ii, row := range mino.shape {
 		for jj, c := range row {
 			if c != '#' {
@@ -22,7 +22,7 @@ func isPlacableAt(ss *SolverState, mino *MinoMaster, i, j int) bool {
 	return true
 }
 
-func placeAt(ss *SolverState, mino *MinoMaster, i, j, k int) {
+func (ss *SolverState) placeAt(mino *MinoMaster, i, j, k int) {
 	r := 'A' + rune(k)
 	for ii, row := range mino.shape {
 		for jj, c := range row {
@@ -34,7 +34,7 @@ func placeAt(ss *SolverState, mino *MinoMaster, i, j, k int) {
 	}
 }
 
-func removeFrom(ss *SolverState, mino *MinoMaster, i, j int) {
+func (ss *SolverState) removeFrom(mino *MinoMaster, i, j int) {
 	for ii, row := range mino.shape {
 		for jj, c := range row {
 			if c != '#' {
@@ -43,4 +43,16 @@ func removeFrom(ss *SolverState, mino *MinoMaster, i, j int) {
 			ss.Board[i+ii][j+jj] = '.'
 		}
 	}
+}
+
+func firstSize(core *Core) int {
+	n := len(core.GivenMinos)
+	minos := n * 4
+	s := 4
+	for ; true; s++ {
+		if minos <= s*s {
+			break
+		}
+	}
+	return s
 }
