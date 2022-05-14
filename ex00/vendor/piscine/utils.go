@@ -30,12 +30,6 @@ func isRuneDigit(c rune) bool {
 	return '0' <= c && c <= '9'
 }
 
-func PrintBoard(rs [][]rune) {
-	for _, s := range rs {
-		PrintStr(string(s) + "\n")
-	}
-}
-
 func PrintError(msg string) {
 	PrintStr("Error: " + msg + "\n")
 }
@@ -88,4 +82,15 @@ func maxInt(a, b int) int {
 		return b
 	}
 	return a
+}
+
+func Join(s []string, sep string) string {
+	rv := ""
+	for i, a := range s {
+		if i > 0 {
+			rv += sep
+		}
+		rv += a
+	}
+	return rv
 }
