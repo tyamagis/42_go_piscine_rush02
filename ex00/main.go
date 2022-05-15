@@ -8,7 +8,8 @@ import (
 func main() {
 	core := piscine.NewCore()
 	n := piscine.SliceLen(os.Args)
-	if n < 2 {
+	if n != 2{
+		piscine.ShowUsage()
 		return
 	}
 	path := os.Args[1]
