@@ -4,7 +4,9 @@ import "fmt"
 
 func Solve(core *Core) {
 	fn := firstSize(core)
-	PrintStr(ScreenClear)
+	if vFlag {
+		PrintStr(ScreenClear)
+	}
 	nMino := len(core.GivenMinos)
 	parity := Reduce(core.GivenMinos, 0, func(s, t, _ int) int {
 		if MinoTU <= t && t <= MinoTL {

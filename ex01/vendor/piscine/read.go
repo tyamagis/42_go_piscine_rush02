@@ -10,10 +10,14 @@ const readBufSize = 1024
 func Read(path string) (string, bool) {
 	f, oErr := os.Open(path)
 	if oErr != nil {
+		PrintStr(oErr.Error() + "\n")
 		return "", false
 	}
 	defer f.Close()
+	return ReadFromFile(f)
+}
 
+func ReadFromFile(f *os.File) (string, bool) {
 	var buffer [readBufSize]byte
 	data := []byte{}
 	for {
@@ -22,6 +26,7 @@ func Read(path string) (string, bool) {
 			if rErr.Error() == "EOF" {
 				break
 			}
+			PrintStr(rErr.Error() + "\n")
 			return "", false
 		}
 		data = append(data, buffer[:n]...)
