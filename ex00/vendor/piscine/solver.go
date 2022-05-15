@@ -6,12 +6,28 @@ func Solve(core *Core) {
 	fn := firstSize(core)
 	fmt.Println(ScreenClear)
 	nMino := len(core.GivenMinos)
+	parity := Reduce(core.GivenMinos, 0, func(s, t, _ int) int {
+		if MinoTU <= t && t <= MinoTL {
+			return s + 1
+		}
+		return s
+	})
+	names := Map(core.GivenMinos, func(k, _ int) string {
+		return MinoNames[k]
+	})
+	fmt.Println(names)
 	for n := fn; true; n++ {
 		nVacant := n*n - nMino*4
-		fmt.Printf("try for size %d, minos = %d(%c - %c), vacants = %d\n",
+		if nVacant == 0 {
+			if (parity+n*n)%2 != 0 {
+				continue
+			}
+		}
+		fmt.Printf("try for size %d, minos = %d(%c - %c), vacants = %d, parity = %d\n",
 			n, nMino,
 			'A', 'A'+rune(nMino)-1,
 			nVacant,
+			parity%2,
 		)
 		if solveForSize(core, n) {
 			fmt.Println("solved")

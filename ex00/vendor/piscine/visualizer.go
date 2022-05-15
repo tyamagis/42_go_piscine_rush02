@@ -23,7 +23,7 @@ func Visualize(core *Core, state *SolverState, i, j, k int, comment string) {
 		return MinoNames[k]
 	})
 	fmt.Println(names, "                                             ")
-	fmt.Println(restNames, "                                             ")
+	fmt.Println(Reverse(restNames), "                                             ")
 
 	head := " │"
 	for x, _ := range Seq(0, state.Size) {
