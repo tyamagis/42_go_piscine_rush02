@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"os"
 	"piscine"
 )
@@ -12,7 +13,7 @@ func main() {
 	if n < 2 {
 		return
 	}
-	path := os.Args[1]
+	path := os.Args[flag.NFlag()+1]
 	content, _ := piscine.Read(path)
 	blocks, _ := piscine.Divide(content)
 	if !piscine.Validate(core, blocks) {
