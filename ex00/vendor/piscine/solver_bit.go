@@ -141,7 +141,7 @@ func (ss *SolverState) getRestVacantPlacable() (int, []int, map[int]int) {
 				isle4 = append(isle4, pos)
 			} else if 4 < nn && nn < 8 {
 				over4[pos] = nn
-			} else if nn%4 == 0 {
+			} else if nn == 8 {
 				over4[pos] = nn
 			}
 			n += nn - nn%4
@@ -151,7 +151,7 @@ func (ss *SolverState) getRestVacantPlacable() (int, []int, map[int]int) {
 }
 
 func (ss *SolverState) getRestVacantPlacableFine(core *Core, k int) int {
-	n, isle4, _ := ss.getRestVacantPlacable()
+	n, isle4, over4 := ss.getRestVacantPlacable()
 
 	// サイズ4の島について、残りの手駒で埋められるかどうかをチェックする。
 	restMino := ss.RestMinoCount
@@ -182,6 +182,83 @@ func (ss *SolverState) getRestVacantPlacableFine(core *Core, k int) int {
 		}
 	}
 
+	// サイズ 5 ~ 7の島について、
+	//
+	for pos, count := range over4 {
+		bb := Map(ss.BitVBoard, func(s uint64, _ int) uint64 {
+			return s
+		})
+		i, j := pos/ss.Size, pos%ss.Size
+		posses := make([]int, 0, count)
+		ss.fill(bb, i, j, func(ii, jj int) {
+			posses = append(posses, ii*ss.Size+jj)
+		})
+		// Visualize(core, ss, -1, -1, k,
+		// 	fmt.Sprintf("posses %v", posses),
+		// )
+		ok := false
+		for _, p := range posses {
+			i, j := p/ss.Size, p%ss.Size
+			// Visualize(core, ss, -1, -1, k,
+			// 	fmt.Sprintf("test at (%d,%d), rest: %v", i, j, ss.RestMinoCount),
+			// )
+			for kk, cnt := range restMino {
+				if cnt <= 0 {
+					continue
+				}
+				mino := core.MinoReverseMap[kk]
+				j -= mino.firstBlack
+				if j < 0 {
+					continue
+				}
+				// Visualize(core, ss, -1, -1, k,
+				// 	fmt.Sprintf("test place piece %d at (%d,%d)", kk, i, j),
+				// )
+				if ss.Size < i+mino.Height || ss.Size < j+mino.Width {
+					continue
+				}
+				if !ss.isBitPlacableAt(mino, i, j) {
+					continue
+				}
+				// Visualize(core, ss, -1, -1, k,
+				// 	fmt.Sprintf("can place piece %d at (%d,%d)", kk, i, j),
+				// )
+				// 位置(i,j)にピースkを置ける場合
+				if count < 8 {
+					ok = true
+					break
+				}
+				// 島のサイズが8の場合
+				// -> 実際においてみる
+				// -> 置いた後に残った島のサイズを見る
+				// -> 「4の島がただ1つ残る」でないなら、それはおかしな島
+
+				ss.bitPlaceAt(mino, i, j, kk)
+				bb := Map(ss.BitVBoard, func(s uint64, _ int) uint64 {
+					return s
+				})
+				rest := 0
+				for p, _ := range posses {
+					rest += ss.fill(bb, p/ss.Size, p%ss.Size, nil) % 4
+				}
+				ss.bitRemoveFrom(mino, i, j, kk)
+				if rest == 0 {
+					ok = true
+					break
+				}
+			}
+			if !ok {
+				break
+			}
+		}
+		if !ok {
+			// Visualize(core, ss, -1, -1, -1,
+			// 	fmt.Sprintf("no piece at (%d,%d)", i, j),
+			// )
+			// 島の中に手持ちのピースを1つも置けない場合
+			n -= 4
+		}
+	}
 	return n
 }
 
