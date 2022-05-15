@@ -13,6 +13,9 @@ const CursorTop = "\x1b[H"
 const ScreenClear = "\x1b[2J"
 
 func Visualize(core *Core, state *SolverState, i, j, k int, comment string) {
+	if vFlag == false {
+		return
+	}
 	// return
 	fmt.Print(CursorTop)
 	fmt.Println(comment, "                                               ")

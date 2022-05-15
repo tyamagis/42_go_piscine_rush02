@@ -2,13 +2,13 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"piscine"
 )
 
 func main() {
 	core := piscine.NewCore()
-
 	n := piscine.SliceLen(os.Args)
 	if n < 2 {
 		return
