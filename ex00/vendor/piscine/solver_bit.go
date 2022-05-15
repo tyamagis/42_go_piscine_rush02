@@ -96,3 +96,43 @@ func (ss *SolverState) getRestVacantOver(i, j int) int {
 	}
 	return n
 }
+
+func (ss *SolverState) fill(bb []uint64, i, j int) int {
+	bb[i] |= (1 << j)
+	if ((ss.BitVBoard[i] >> j) & 1) == 1 {
+		return 0
+	}
+	var n int = 1
+	if 0 < i && ((bb[i-1]>>j)&1) == 0 {
+		n += ss.fill(bb, i-1, j)
+	}
+	if i+1 < ss.Size && ((bb[i+1]>>j)&1) == 0 {
+		n += ss.fill(bb, i+1, j)
+	}
+	if 0 < j && ((bb[i]>>(j-1))&1) == 0 {
+		n += ss.fill(bb, i, j-1)
+	}
+	if j+1 < ss.Size && ((bb[i]>>(j+1))&1) == 0 {
+		n += ss.fill(bb, i, j+1)
+	}
+	return n
+}
+
+func (ss *SolverState) getRestVacantPlacable() int {
+	bb := Map(ss.BitVBoard, func(s uint64, _ int) uint64 {
+		return s
+	})
+	var n int = 0
+	for i := 0; i < ss.Size; i++ {
+		for j := 0; j < ss.Size; j++ {
+			if ((bb[i] >> j) & 1) == 1 {
+				continue
+			}
+			nn := ss.fill(bb, i, j)
+			if nn >= 4 {
+				n += nn
+			}
+		}
+	}
+	return n
+}

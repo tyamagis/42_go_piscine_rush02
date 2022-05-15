@@ -24,6 +24,28 @@ const (
 	MinoZR
 )
 
+var MinoNames []string = []string{
+	"O",
+	"LU",
+	"LR",
+	"LD",
+	"LL",
+	"JU",
+	"JR",
+	"JD",
+	"JL",
+	"TU",
+	"TR",
+	"TD",
+	"TL",
+	"IU",
+	"IR",
+	"SU",
+	"SR",
+	"ZU",
+	"ZR",
+}
+
 const MinoSize = 4
 
 type MinoMaster struct {

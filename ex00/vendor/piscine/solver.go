@@ -8,7 +8,11 @@ func Solve(core *Core) {
 	nMino := len(core.GivenMinos)
 	for n := fn; true; n++ {
 		nVacant := n*n - nMino*4
-		fmt.Printf("try for size %d, minos = %d, vacants = %d\n", n, nMino, nVacant)
+		fmt.Printf("try for size %d, minos = %d(%c - %c), vacants = %d\n",
+			n, nMino,
+			'A', 'A'+rune(nMino)-1,
+			nVacant,
+		)
 		if solveForSize(core, n) {
 			fmt.Println("solved")
 			return
@@ -63,6 +67,15 @@ func dfs(core *Core, state *SolverState, k int) bool {
 		state.bitPrintBoard(core)
 		return true
 	}
+	restVacant := state.getRestVacantPlacable()
+	restToPut := 4 * (len(core.GivenMinos) - k)
+	if restVacant < restToPut {
+		Visualize(core, state, -1, -1, k,
+			fmt.Sprintf("no enough vacant: needed %d, actual %d", restToPut, restVacant),
+		)
+		return false
+	}
+
 	mt := core.GivenMinos[k]
 	mino := core.MinoReverseMap[mt]
 	// fmt.Println(mino)
@@ -89,7 +102,7 @@ func dfs(core *Core, state *SolverState, k int) bool {
 
 			state.bitPlaceAt(mino, i, j, k)
 			// fmt.Println(state.BitVBoard)
-			// Visualize(core, state, i, j, k, fmt.Sprintf("place %d at (%d, %d)", k, i, j))
+			Visualize(core, state, i, j, k, fmt.Sprintf("place %d at (%d, %d)", k, i, j))
 			if dfs(core, state, k+1) {
 				return true
 			}
