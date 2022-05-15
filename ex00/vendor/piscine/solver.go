@@ -4,7 +4,7 @@ import "fmt"
 
 func Solve(core *Core) {
 	fn := firstSize(core)
-	fmt.Println(ScreenClear)
+	PrintStr(ScreenClear)
 	nMino := len(core.GivenMinos)
 	parity := Reduce(core.GivenMinos, 0, func(s, t, _ int) int {
 		if MinoTU <= t && t <= MinoTL {
@@ -12,10 +12,6 @@ func Solve(core *Core) {
 		}
 		return s
 	})
-	names := Map(core.GivenMinos, func(k, _ int) string {
-		return MinoNames[k]
-	})
-	fmt.Println(names)
 	for n := fn; true; n++ {
 		nVacant := n*n - nMino*4
 		if nVacant == 0 {
@@ -25,15 +21,15 @@ func Solve(core *Core) {
 		}
 		fmt.Printf("try for size %d, minos = %d(%c - %c), vacants = %d, parity = %d\n",
 			n, nMino,
-			'A', 'A'+rune(nMino)-1,
+			Base[0], Base[nMino-1],
 			nVacant,
 			parity%2,
 		)
 		if solveForSize(core, n) {
-			fmt.Println("solved")
+			PrintStr("solved\n")
 			return
 		}
-		fmt.Println("failed")
+		PrintStr("failed\n")
 	}
 }
 
@@ -50,6 +46,7 @@ type SolverState struct {
 	PositionStack map[int]*[]int
 	// ミノ種別をkey, 残りの数をvalueとするマップ
 	RestMinoCount map[int]int
+	FailMap       map[string]bool
 }
 
 func solveForSize(core *Core, size int) bool {
@@ -67,6 +64,7 @@ func solveForSize(core *Core, size int) bool {
 		Placement:     map[int]int{},
 		PositionStack: map[int]*[]int{},
 		RestMinoCount: map[int]int{},
+		FailMap:       map[string]bool{},
 	}
 	ForEach(core.Minos, func(k, _ int) {
 		s := make([]int, 0, size)
@@ -83,13 +81,24 @@ func dfs(core *Core, state *SolverState, k int) bool {
 		state.bitPrintBoard(core)
 		return true
 	}
-	// if k < len(core.GivenMinos)/2 || k%4 == 3 {
-	restVacant := state.getRestVacantPlacableFine(core)
-	restToPut := 4 * (len(core.GivenMinos) - k)
-	if restVacant < restToPut {
+
+	code := state.encodeBoard()
+	if state.FailMap[code] {
 		Visualize(core, state, -1, -1, k,
-			fmt.Sprintf("no enough vacant: needed %d, actual %d", restToPut, restVacant),
+			fmt.Sprintf("HIT!!!!!!!!!!!!!!!!!!!!!(%d,%d)", k, len(state.FailMap)),
 		)
+		return false
+	}
+
+	// if k < len(core.GivenMinos)/2 || k%4 == 3 {
+	restVacant := state.getRestVacantPlacableFine(core, k)
+	restToPut := 4 * (len(core.GivenMinos) - k)
+	// fmt.Println(restVacant, restToPut, residual)
+	if restVacant < restToPut {
+		// Visualize(core, state, -1, -1, k,
+		// 	fmt.Sprintf("no enough vacant: needed %d, actual %d", restToPut, restVacant),
+		// )
+		// state.FailMap[code] = true
 		return false
 	}
 	// }
@@ -99,17 +108,19 @@ func dfs(core *Core, state *SolverState, k int) bool {
 	// fmt.Println(mino)
 
 	i, j := 0, 0
+	// すでに同種のミノを置いていた場合、それよりも後ろに置く必要がある
 	if len(*state.PositionStack[mt]) > 0 {
 		pos := Top(state.PositionStack[mt]) + 1
 		i, j = pos/state.Size, pos%state.Size
 	}
 
+	restToPut = state.RestMinoCount[k] * 4
 	for ; i < state.Size-mino.Height+1; i++ {
 		for ; j < state.Size-mino.Width+1; j++ {
 			restVacant := state.getRestVacantOver(i, j)
-			restToPut := state.RestMinoCount[k] * 4
 			if restVacant < restToPut {
-				Visualize(core, state, i, j, k, fmt.Sprintf("no enough vacant for %d", k))
+				// Visualize(core, state, i, j, k, fmt.Sprintf("no enough vacant for %d", k))
+				// state.FailMap[code] = true
 				return false
 			}
 
@@ -120,7 +131,7 @@ func dfs(core *Core, state *SolverState, k int) bool {
 
 			state.bitPlaceAt(mino, i, j, k)
 			// fmt.Println(state.BitVBoard)
-			Visualize(core, state, i, j, k, fmt.Sprintf("place %d at (%d, %d)", k, i, j))
+			// Visualize(core, state, i, j, k, fmt.Sprintf("place %d at (%d, %d)", k, i, j))
 			if dfs(core, state, k+1) {
 				return true
 			}
@@ -129,5 +140,6 @@ func dfs(core *Core, state *SolverState, k int) bool {
 		j = 0
 	}
 
+	state.FailMap[code] = true
 	return false
 }

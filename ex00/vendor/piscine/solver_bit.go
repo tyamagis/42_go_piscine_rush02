@@ -28,7 +28,7 @@ func (ss *SolverState) makeBitBoardString(core *Core) [][]rune {
 		i, j := pos/ss.Size, pos%ss.Size
 		t := core.GivenMinos[k]
 		mino := core.MinoReverseMap[t]
-		r := 'A' + rune(k)
+		r := rune(Base[k])
 		for ii, row := range mino.shape {
 			for jj, c := range row {
 				if c != '#' {
@@ -97,62 +97,72 @@ func (ss *SolverState) getRestVacantOver(i, j int) int {
 	return n
 }
 
-func (ss *SolverState) fill(bb []uint64, i, j int) int {
+func (ss *SolverState) fill(bb []uint64, i, j int, f func(i, j int)) int {
 	bb[i] |= (1 << j)
 	if ((ss.BitVBoard[i] >> j) & 1) == 1 {
 		return 0
 	}
+	if f != nil {
+		f(i, j)
+	}
 	var n int = 1
 	if 0 < i && ((bb[i-1]>>j)&1) == 0 {
-		n += ss.fill(bb, i-1, j)
+		n += ss.fill(bb, i-1, j, f)
 	}
 	if i+1 < ss.Size && ((bb[i+1]>>j)&1) == 0 {
-		n += ss.fill(bb, i+1, j)
+		n += ss.fill(bb, i+1, j, f)
 	}
 	if 0 < j && ((bb[i]>>(j-1))&1) == 0 {
-		n += ss.fill(bb, i, j-1)
+		n += ss.fill(bb, i, j-1, f)
 	}
 	if j+1 < ss.Size && ((bb[i]>>(j+1))&1) == 0 {
-		n += ss.fill(bb, i, j+1)
+		n += ss.fill(bb, i, j+1, f)
 	}
 	return n
 }
 
-func (ss *SolverState) getRestVacantPlacable() (int, []int) {
+// 白マスによる「島」について「サイズを4で割ったあまりを除外したもの」の総和を返す
+// -> 「残りの白マスのうちテトラミノを使って埋められる可能性があるマスの数」の上からの評価になる
+func (ss *SolverState) getRestVacantPlacable() (int, []int, map[int]int) {
 	bb := Map(ss.BitVBoard, func(s uint64, _ int) uint64 {
 		return s
 	})
 	var n int = 0
 	isle4 := make([]int, 0, ss.Size*ss.Size)
+	over4 := map[int]int{}
 	for i := 0; i < ss.Size; i++ {
 		for j := 0; j < ss.Size; j++ {
 			if ((bb[i] >> j) & 1) == 1 {
 				continue
 			}
-			nn := ss.fill(bb, i, j)
-			n += nn - nn%4
+			nn := ss.fill(bb, i, j, nil)
+			pos := i*ss.Size + j
 			if nn == 4 {
-				isle4 = append(isle4, i*ss.Size+j)
+				isle4 = append(isle4, pos)
+			} else if 4 < nn && nn < 8 {
+				over4[pos] = nn
+			} else if nn%4 == 0 {
+				over4[pos] = nn
 			}
+			n += nn - nn%4
 		}
 	}
-	return n, isle4
+	return n, isle4, over4
 }
 
-func (ss *SolverState) getRestVacantPlacableFine(core *Core) int {
-	n, isle4 := ss.getRestVacantPlacable()
-	// サイズ4の島について、残りの手駒で埋められるかどうかをチェックする。
-	// fmt.Println(isle4)
+func (ss *SolverState) getRestVacantPlacableFine(core *Core, k int) int {
+	n, isle4, over4 := ss.getRestVacantPlacable()
 
+	// サイズ4の島について、残りの手駒で埋められるかどうかをチェックする。
 	restMino := ss.RestMinoCount
 	for _, pos := range isle4 {
 		i, j := pos/ss.Size, pos%ss.Size
 		ok := false
-		for k, count := range restMino {
-			if count == 0 {
+		for kk, count := range restMino {
+			if count <= 0 {
 				continue
 			}
-			mino := core.MinoReverseMap[k]
+			mino := core.MinoReverseMap[kk]
 			j -= mino.firstBlack
 			if j < 0 {
 				continue
@@ -161,15 +171,107 @@ func (ss *SolverState) getRestVacantPlacableFine(core *Core) int {
 				continue
 			}
 			if ss.isBitPlacableAt(mino, i, j) {
-				restMino[k] -= 1
+				restMino[kk] -= 1
 				ok = true
 				break
 			}
 		}
 		if !ok {
+			// 埋められない島があるなら、その分4マスをnから引く
 			n -= 4
 		}
 	}
 
+	// サイズ 5 ~ 7の島について、
+	//
+	for pos, count := range over4 {
+		bb := Map(ss.BitVBoard, func(s uint64, _ int) uint64 {
+			return s
+		})
+		i, j := pos/ss.Size, pos%ss.Size
+		posses := make([]int, 0, count)
+		ss.fill(bb, i, j, func(ii, jj int) {
+			posses = append(posses, ii*ss.Size+jj)
+		})
+		// Visualize(core, ss, -1, -1, k,
+		// 	fmt.Sprintf("posses %v", posses),
+		// )
+		ok := false
+		for _, p := range posses {
+			i, j := p/ss.Size, p%ss.Size
+			// Visualize(core, ss, -1, -1, k,
+			// 	fmt.Sprintf("test at (%d,%d), rest: %v", i, j, ss.RestMinoCount),
+			// )
+			for kk, cnt := range restMino {
+				if cnt <= 0 {
+					continue
+				}
+				mino := core.MinoReverseMap[kk]
+				j -= mino.firstBlack
+				if j < 0 {
+					continue
+				}
+				// Visualize(core, ss, -1, -1, k,
+				// 	fmt.Sprintf("test place piece %d at (%d,%d)", kk, i, j),
+				// )
+				if ss.Size < i+mino.Height || ss.Size < j+mino.Width {
+					continue
+				}
+				if !ss.isBitPlacableAt(mino, i, j) {
+					continue
+				}
+				// Visualize(core, ss, -1, -1, k,
+				// 	fmt.Sprintf("can place piece %d at (%d,%d)", kk, i, j),
+				// )
+				// 位置(i,j)にピースkを置ける場合
+				if count < 8 {
+					ok = true
+					break
+				}
+				// 島のサイズが8の場合
+				// -> 実際においてみる
+				// -> 置いた後に残った島のサイズを見る
+				// -> 「4の島がただ1つ残る」でないなら、それはおかしな島
+
+				ss.bitPlaceAt(mino, i, j, kk)
+				bb := Map(ss.BitVBoard, func(s uint64, _ int) uint64 {
+					return s
+				})
+				rest := 0
+				for p, _ := range posses {
+					rest += ss.fill(bb, p/ss.Size, p%ss.Size, nil) % 4
+				}
+				ss.bitRemoveFrom(mino, i, j, kk)
+				if rest == 0 {
+					ok = true
+					break
+				}
+			}
+			if !ok {
+				break
+			}
+		}
+		if !ok {
+			// Visualize(core, ss, -1, -1, -1,
+			// 	fmt.Sprintf("no piece at (%d,%d)", i, j),
+			// )
+			// 島の中に手持ちのピースを1つも置けない場合
+			n -= 4
+		}
+	}
 	return n
+}
+
+const Base = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_@"
+
+func (ss *SolverState) encodeBoard() string {
+	var s = ""
+	for i := 0; i < ss.Size; i++ {
+		row := ss.BitVBoard[i]
+		for j := 0; j < ss.Size; j += 6 {
+			x := Base[(row>>j)&0x3f]
+			s += string(x)
+		}
+	}
+	return s
 }

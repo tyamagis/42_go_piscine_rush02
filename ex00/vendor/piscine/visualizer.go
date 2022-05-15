@@ -50,6 +50,7 @@ func Visualize(core *Core, state *SolverState, i, j, k int, comment string) {
 		}
 		fmt.Println(s)
 	}
-	st := time.Duration(1) * time.Millisecond
+	fmt.Println(state.encodeBoard())
+	st := time.Duration(10) * time.Millisecond
 	time.Sleep(st)
 }
