@@ -24,11 +24,34 @@ const (
 	MinoZR
 )
 
+var MinoNames []string = []string{
+	"O",
+	"LU",
+	"LR",
+	"LD",
+	"LL",
+	"JU",
+	"JR",
+	"JD",
+	"JL",
+	"TU",
+	"TR",
+	"TD",
+	"TL",
+	"IU",
+	"IR",
+	"SU",
+	"SR",
+	"ZU",
+	"ZR",
+}
+
 const MinoSize = 4
 
 type MinoMaster struct {
 	MinoType             int
 	Height, Width        int
+	firstBlack           int // 一番上の行の一番左の'#'の横位置
 	shape                [][]rune
 	bitHShape, bitVShape []uint64
 }
@@ -88,13 +111,17 @@ func MakeMinoShapes() (map[string]*MinoMaster, map[int]*MinoMaster) {
 		runeShape := Map(shape, func(s string, _ int) []rune {
 			return []rune(s)
 		})
+		firstBlack := Index([]rune(shape[0]), func(r rune, _ int) bool {
+			return r == '#'
+		})
 		mm := &MinoMaster{
-			MinoType:  i,
-			Height:    h,
-			Width:     w,
-			shape:     runeShape,
-			bitVShape: ShapeToBitmask(shape),
-			bitHShape: ShapeToBitmask(TransposeLines(shape)),
+			MinoType:   i,
+			Height:     h,
+			Width:      w,
+			shape:      runeShape,
+			firstBlack: firstBlack,
+			bitVShape:  ShapeToBitmask(shape),
+			bitHShape:  ShapeToBitmask(TransposeLines(shape)),
 		}
 		shapeMap[joined] = mm
 		shapeReverseMap[i] = mm

@@ -1,10 +1,8 @@
 package piscine
 
-import "fmt"
-
 func (ss *SolverState) PrintBoard() {
 	ForEach(ss.Board, func(rs []rune, _ int) {
-		fmt.Println(string(rs))
+		PrintStr(string(rs) + "\n")
 	})
 }
 

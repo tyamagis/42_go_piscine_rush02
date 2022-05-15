@@ -17,7 +17,7 @@ func Generate(core *Core, n int) (input string) {
 		randWidth := rand.Intn(5 - width)
 		randHeight := rand.Intn(5 - height)
 		if i != 0 && i != n {
-			input += "\n\n"
+			input += "\n"
 		}
 		input += s.Join(TransMinos(randWidth, randHeight, mino), "")
 	}

@@ -13,7 +13,19 @@ const CursorTop = "\x1b[H"
 const ScreenClear = "\x1b[2J"
 
 func Visualize(core *Core, state *SolverState, i, j, k int, comment string) {
+	if vFlag == false {
+		return
+	}
 	fmt.Print(CursorTop)
+	fmt.Println(comment, "                                               ")
+	names := Map(core.GivenMinos[:k+1], func(k, _ int) string {
+		return MinoNames[k]
+	})
+	restNames := Map(core.GivenMinos[k+1:], func(k, _ int) string {
+		return MinoNames[k]
+	})
+	fmt.Println(names, "                                             ")
+	fmt.Println(Reverse(restNames), "                                             ")
 
 	head := " │"
 	for x, _ := range Seq(0, state.Size) {
@@ -40,6 +52,7 @@ func Visualize(core *Core, state *SolverState, i, j, k int, comment string) {
 		}
 		fmt.Println(s)
 	}
-	st := time.Duration(500) * time.Millisecond
+	fmt.Println(state.encodeBoard())
+	st := time.Duration(speedFlag) * time.Millisecond
 	time.Sleep(st)
 }

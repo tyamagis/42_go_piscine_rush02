@@ -6,7 +6,7 @@ import "fmt"
 // check that every elements in block is valid as tetrimino definition.
 func Validate(core *Core, blocks [][]string) bool {
 	n := len(blocks)
-	if n < 1 || 26 < n {
+	if n < 1 || len(Base) < n {
 		PrintError("number of block is invalid")
 		fmt.Println("n", n)
 		return false
