@@ -8,8 +8,13 @@ import (
 
 func main() {
 	core := piscine.NewCore()
+	if piscine.GFlag != 0 {
+		piscine.Generate(core, piscine.GFlag)
+		return
+	}
 	n := piscine.SliceLen(os.Args)
-	if n < 2 {
+	if n != 2 {
+		piscine.ShowUsage()
 		return
 	}
 	path := os.Args[flag.NFlag()+1]
