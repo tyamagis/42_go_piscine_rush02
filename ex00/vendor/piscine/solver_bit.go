@@ -63,7 +63,7 @@ func (ss *SolverState) isBitPlacableAt(mino *MinoMaster, i, j int) bool {
 func (ss *SolverState) bitPlaceAt(mino *MinoMaster, i, j, k int) {
 	ss.Placement[i*ss.Size+j] = k
 	Push(ss.PositionStack[mino.MinoType], i*ss.Size+j)
-	ss.RestMinoCount[k] = ss.RestMinoCount[k] - 1
+	ss.RestMinoCount[mino.MinoType] = ss.RestMinoCount[mino.MinoType] - 1
 	for ii, bitRow := range mino.bitVShape {
 		ss.BitVBoard[i+ii] |= (bitRow << j)
 	}
@@ -75,7 +75,7 @@ func (ss *SolverState) bitPlaceAt(mino *MinoMaster, i, j, k int) {
 func (ss *SolverState) bitRemoveFrom(mino *MinoMaster, i, j, k int) {
 	delete(ss.Placement, i*ss.Size+j)
 	Pop(ss.PositionStack[mino.MinoType])
-	ss.RestMinoCount[k] = ss.RestMinoCount[k] + 1
+	ss.RestMinoCount[mino.MinoType] = ss.RestMinoCount[mino.MinoType] + 1
 	for ii, bitRow := range mino.bitVShape {
 		ss.BitVBoard[i+ii] ^= (bitRow << j)
 	}
@@ -118,21 +118,58 @@ func (ss *SolverState) fill(bb []uint64, i, j int) int {
 	return n
 }
 
-func (ss *SolverState) getRestVacantPlacable() int {
+func (ss *SolverState) getRestVacantPlacable() (int, []int) {
 	bb := Map(ss.BitVBoard, func(s uint64, _ int) uint64 {
 		return s
 	})
 	var n int = 0
+	isle4 := make([]int, 0, ss.Size*ss.Size)
 	for i := 0; i < ss.Size; i++ {
 		for j := 0; j < ss.Size; j++ {
 			if ((bb[i] >> j) & 1) == 1 {
 				continue
 			}
 			nn := ss.fill(bb, i, j)
-			if nn >= 4 {
-				n += nn
+			n += nn - nn%4
+			if nn == 4 {
+				isle4 = append(isle4, i*ss.Size+j)
 			}
 		}
 	}
+	return n, isle4
+}
+
+func (ss *SolverState) getRestVacantPlacableFine(core *Core) int {
+	n, isle4 := ss.getRestVacantPlacable()
+	// サイズ4の島について、残りの手駒で埋められるかどうかをチェックする。
+	// fmt.Println(isle4)
+
+	restMino := ss.RestMinoCount
+	for _, pos := range isle4 {
+		i, j := pos/ss.Size, pos%ss.Size
+		ok := false
+		for k, count := range restMino {
+			if count == 0 {
+				continue
+			}
+			mino := core.MinoReverseMap[k]
+			j -= mino.firstBlack
+			if j < 0 {
+				continue
+			}
+			if ss.Size < i+mino.Height || ss.Size < j+mino.Width {
+				continue
+			}
+			if ss.isBitPlacableAt(mino, i, j) {
+				restMino[k] -= 1
+				ok = true
+				break
+			}
+		}
+		if !ok {
+			n -= 4
+		}
+	}
+
 	return n
 }

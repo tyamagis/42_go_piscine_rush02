@@ -67,7 +67,8 @@ func dfs(core *Core, state *SolverState, k int) bool {
 		state.bitPrintBoard(core)
 		return true
 	}
-	restVacant := state.getRestVacantPlacable()
+	// if k < len(core.GivenMinos)/2 || k%4 == 3 {
+	restVacant := state.getRestVacantPlacableFine(core)
 	restToPut := 4 * (len(core.GivenMinos) - k)
 	if restVacant < restToPut {
 		Visualize(core, state, -1, -1, k,
@@ -75,6 +76,7 @@ func dfs(core *Core, state *SolverState, k int) bool {
 		)
 		return false
 	}
+	// }
 
 	mt := core.GivenMinos[k]
 	mino := core.MinoReverseMap[mt]
@@ -112,5 +114,4 @@ func dfs(core *Core, state *SolverState, k int) bool {
 	}
 
 	return false
-
 }

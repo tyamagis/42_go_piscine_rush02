@@ -41,6 +41,25 @@ func Some[T any](s []T, f func(a T, i int) bool) bool {
 	return false
 }
 
+func Filter[T any](s []T, f func(a T, i int) bool) []T {
+	rv := make([]T, 0, 0)
+	for i, a := range s {
+		if f(a, i) {
+			rv = append(rv, a)
+		}
+	}
+	return rv
+}
+
+func Index[T any](s []T, f func(a T, i int) bool) int {
+	for i, a := range s {
+		if f(a, i) {
+			return i
+		}
+	}
+	return -1
+}
+
 func Seq(from, to int) []int {
 	var rv []int
 	if from == to {
