@@ -14,6 +14,7 @@ const ScreenClear = "\x1b[2J"
 
 func Visualize(core *Core, state *SolverState, i, j, k int, comment string) {
 	fmt.Print(CursorTop)
+	fmt.Println(comment, "                  ")
 
 	head := " │"
 	for x, _ := range Seq(0, state.Size) {
@@ -40,6 +41,7 @@ func Visualize(core *Core, state *SolverState, i, j, k int, comment string) {
 		}
 		fmt.Println(s)
 	}
-	st := time.Duration(500) * time.Millisecond
+	// fmt.Println("rest:", i, j, state.getRestVacantOver(i, j), "          ")
+	st := time.Duration(10) * time.Millisecond
 	time.Sleep(st)
 }
