@@ -1,6 +1,6 @@
 package piscine
 
-import "fmt"
+// import "fmt"
 
 // 1 <= size <= 64
 func makeBitBoard(size int) []uint64 {
@@ -12,7 +12,7 @@ func makeBitBoard(size int) []uint64 {
 func (ss *SolverState) bitPrintBoard(core *Core) {
 	board := ss.makeBitBoardString(core)
 	ForEach(board, func(rs []rune, _ int) {
-		fmt.Println(string(rs))
+		PrintLn(string(rs))
 	})
 }
 

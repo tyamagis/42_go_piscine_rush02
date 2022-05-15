@@ -1,6 +1,6 @@
 package piscine
 
-import "fmt"
+// import "fmt"
 
 func Solve(core *Core) {
 	fn := firstSize(core)
@@ -19,17 +19,17 @@ func Solve(core *Core) {
 				continue
 			}
 		}
-		fmt.Printf("try for size %d, minos = %d(%c - %c), vacants = %d, parity = %d\n",
-			n, nMino,
-			Base[0], Base[nMino-1],
-			nVacant,
-			parity%2,
-		)
+		// fmt.Printf("try for size %d, minos = %d(%c - %c), vacants = %d, parity = %d\n",
+		// 	n, nMino,
+		// 	Base[0], Base[nMino-1],
+		// 	nVacant,
+		// 	parity%2,
+		// )
 		if solveForSize(core, n) {
-			PrintStr("solved\n")
+			// PrintStr("solved\n")
 			return
 		}
-		PrintStr("failed\n")
+		// PrintStr("failed\n")
 	}
 }
 
@@ -84,9 +84,9 @@ func dfs(core *Core, state *SolverState, k int) bool {
 
 	code := state.encodeBoard()
 	if state.FailMap[code] {
-		Visualize(core, state, -1, -1, k,
-			fmt.Sprintf("HIT!!!!!!!!!!!!!!!!!!!!!(%d,%d)", k, len(state.FailMap)),
-		)
+		// Visualize(core, state, -1, -1, k,
+		// 	fmt.Sprintf("HIT!!!!!!!!!!!!!!!!!!!!!(%d,%d)", k, len(state.FailMap)),
+		// )
 		return false
 	}
 

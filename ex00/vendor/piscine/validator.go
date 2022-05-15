@@ -1,6 +1,6 @@
 package piscine
 
-import "fmt"
+// import "fmt"
 
 // blocksの各要素([]string)が正しいテトリミノ定義であることを確認する。
 // check that every elements in block is valid as tetrimino definition.
@@ -8,7 +8,7 @@ func Validate(core *Core, blocks [][]string) bool {
 	n := len(blocks)
 	if n < 1 || len(Base) < n {
 		PrintError("number of block is invalid")
-		fmt.Println("n", n)
+		// fmt.Println("n", n)
 		return false
 	}
 
@@ -18,9 +18,9 @@ func Validate(core *Core, blocks [][]string) bool {
 		h := SliceLen(lines)
 		if h != MinoSize {
 			PrintError("mino height is invalid")
-			fmt.Println("-------")
-			fmt.Println(Join(lines, "\n"), i)
-			fmt.Println("-------")
+			// fmt.Println("-------")
+			// fmt.Println(Join(lines, "\n"), i)
+			// fmt.Println("-------")
 			return false
 		}
 		// 各要素の長さが4であるか？

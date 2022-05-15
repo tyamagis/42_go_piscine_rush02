@@ -26,6 +26,13 @@ func PrintStr(s string) {
 	}
 }
 
+func PrintLn(s string) {
+	for _, c := range s {
+		ft.PrintRune(c)
+	}
+	ft.PrintRune('\n')
+}
+
 func isRuneDigit(c rune) bool {
 	return '0' <= c && c <= '9'
 }
